@@ -1,0 +1,33 @@
+go 1.19
+
+use (
+	./application
+	./auth
+	./bloomfilter
+	./cache
+	./collection
+	./config
+	./console
+	./container
+	./contracts
+	./database
+	./email
+	./encryption
+	./events
+	./filesystem
+	./goal
+	./hashing
+	./http
+	./micro
+	./microdemo
+	./pipeline
+	./querybuilder
+	./queue
+	./ratelimiter
+	./redis
+	./serialization
+	./session
+	./supports
+	./validation
+	./websocket
+)
