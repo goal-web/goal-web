@@ -1,7 +1,7 @@
 go 1.25.0
 
-
 use (
+	.
 	./application
 	./auth
 	./bloomfilter
@@ -16,20 +16,21 @@ use (
 	./encryption
 	./events
 	./filesystem
+	./goal
+	./goal-cli
 	./hashing
 	./http
+	./log
+	./migration
 	./pipeline
 	./querybuilder
 	./queue
 	./ratelimiter
 	./redis
+	./routing
 	./serialization
 	./session
 	./supports
 	./validation
-	./routing
-	./migration
-	./goal-cli
-	./goal
 	./views
 )
