@@ -36,97 +36,80 @@ Goal-Web 是一个用 Go 语言编写的高性能、易于使用的 Web 应用�
 
 ### 前提条件
 
-- Go 1.23 或更高版本
+- Go 1.25 或更高版本
 
-### 通过 Goal-CLI 创建项目
-
-```bash
-# 安装 Goal-CLI 工具
-go install github.com/goal-web/goal-cli@latest
-
-# 创建新项目
-goal new my-project
-
-# 进入项目目录
-cd my-project
-
-# 启动开发服务器
-go run main.go run
-```
-
-### 手动安装
+### 通过项目骨架创建项目
 
 ```bash
-# 创建项目目录
+# 克隆项目骨架
 git clone https://github.com/goal-web/goal.git my-project
 
 # 进入项目目录
 cd my-project
 
-# 启动开发服务器
+# 启动开发服务器（也可以使用 make run）
 go run main.go run
+```
+
+### 辅助命令行工具
+
+Goal-CLI 提供代码生成（gen）、组件升级（upgrade）等辅助命令：
+
+```bash
+go install github.com/goal-web/goal-cli@latest
 ```
 
 ## 快速开始
 
-### 创建简单的 HTTP 服务器
+### 定义路由
+
+路由在项目骨架的 `routes/` 目录下定义，处理函数的参数由服务容器自动注入，返回值会自动转换为响应：
 
 ```go
-package main
+// routes/api.go
+package routes
 
 import (
-    "github.com/goal-web/http"
-    "github.com/goal-web/http/router"
+    "github.com/goal-web/contracts"
 )
 
-func main() {
-    // 创建路由
-    r := router.New()
-    
-    // 定义路由
-    r.Get("/", func() string {
-        return "Hello, Goal-Web!"
+func Api(router contracts.HttpRouter) {
+    // 返回 map 会自动转换为 JSON 响应
+    router.Get("/", func() any {
+        return map[string]any{"message": "Hello, Goal-Web!"}
     })
-    
-    r.Get("/users/{id}", func(id int) map[string]interface{} {
-        return map[string]interface{}{
-            "id":   id,
+
+    // 路径参数通过 {name} 声明，使用 request.Param 获取
+    router.Get("/users/{id}", func(request contracts.HttpRequest) any {
+        return map[string]any{
+            "id":   request.Param("id"),
             "name": "Goal User",
         }
     })
-    
-    // 启动 HTTP 服务器
-    http.Run(r, ":8080")
+
+    // 可以按需注入任意服务
+    router.Get("/view", func(views contracts.Views) any {
+        return views.Render("view.html")
+    })
 }
 ```
 
 ### 使用控制器
 
+控制器就是普通的方法，直接注册到路由即可：
+
 ```go
 package controllers
 
-import (
-    "github.com/goal-web/contracts"
-    "github.com/goal-web/http"
-)
-
-type UserController struct {
-    // 依赖注入
+func HelloWorld() any {
+    return map[string]any{"message": "Hello, Goal-Web!"}
 }
 
-func (controller *UserController) Show(id int) contracts.Response {
-    // 获取用户数据...
-    user := map[string]interface{}{
-        "id":   id,
-        "name": "Goal User",
-    }
-    
-    return http.Json(user)
-}
-
-// 在路由中使用控制器
-// r.Get("/users/{id}", controllers.UserController{}.Show)
+// 路由注册
+// router.Get("/", controllers.HelloWorld)
 ```
+
+端口等服务配置见项目骨架的 `config/` 目录。
 
 ## 文档
 
