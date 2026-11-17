@@ -135,3 +135,16 @@ func Api(router contracts.HttpRouter, log contracts.LogManager) {
 ## 后续演进（明确不在 v1）
 
 http 请求日志中间件、日志事件、远程驱动（syslog/sentry）、双写告警、生产级轮转（lumberjack）
+
+## 实施附录（2026-11-17）
+
+实施过程中的实际偏差与要点，与上文设计对照记录：
+
+- **contracts 实发 v0.5.7**（非设计时的 v0.5.5——该版本号已被占用）；`LogManager` 的驱动注册方法定名 `Extend` 而非设计稿的 `Driver`，对齐仓库既有惯例（cache 等组件同名方法）。
+- **supports 实发 v0.5.16**（非原计划的 v0.5.8——实际基线是 v0.5.14，版本号顺延）；`supports/logs` 已改造为 `goal-web/log` 的兼容代理，包 API 原样保留。
+- **`ParseConfig` 增加 `log.Config` 强类型直通**（设计外增强）：goal 骨架的 ConfigProvider 惯例返回结构体（参照 `goal/config/cache.go`），直通形态打通了 goal/config 的强类型 provider 链路；`contracts.Fields` 形态照设计保留。
+- **goal 接线位置修正**：`logs.SetDefault` 接线必须在 `providers.NewApp` 注册**之前**——其 `Register` 内的 `migrate.Auto` 会立即消费 `logs.Default()`。设计文档第三节"服务注册完成后接线"的表述以本条为准。
+- **SetDefault 接线留在 goal 骨架而非 log 组件**（Task 7 已记录的修正）：log 若 import supports，与 supports/logs → log 的代理方向形成模块循环依赖，故接线由骨架完成。
+- **log 组件发版 v0.5.0**（commit 90eaf47，`1.0` 分支），双语 README、CI、49 个测试函数、zap vs apex 基准齐备。
+- **goal 骨架接入 commit 9c61a71**（`1.0` 分支）：以 force-with-lease 覆盖远程旧分叉线（用户授权），接线注释声明了移除 `log.NewService` 时闭包 fail-fast panic 的有意设计（commit 287c392）。
+- 文档：`doc` 仓库新增 `guide/digging-deeper/logging.md`（commit 803a97f）。
